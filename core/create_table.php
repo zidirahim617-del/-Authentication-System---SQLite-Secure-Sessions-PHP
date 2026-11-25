@@ -1,5 +1,14 @@
 <?php
-require 'config.php';
+// Setup script: run from the command line only.
+//   php core/create_table.php
+// Refuse any request that comes through the web server.
+if (PHP_SAPI !== 'cli') {
+    http_response_code(404);
+    exit;
+}
+
+require __DIR__ . '/config.php';
+
 try {
     $db->exec("
         CREATE TABLE IF NOT EXISTS users (
@@ -12,8 +21,8 @@ try {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     ");
-    echo "Users table created successfully!";
+    echo "Users table created successfully!" . PHP_EOL;
 } catch (PDOException $e) {
-    echo "Error: " . $e->getMessage();
+    fwrite(STDERR, "Error: " . $e->getMessage() . PHP_EOL);
+    exit(1);
 }
-?>
