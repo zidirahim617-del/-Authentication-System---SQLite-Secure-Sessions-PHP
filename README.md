@@ -42,3 +42,19 @@ A lightweight and secure user authentication system built using **core PHP**, **
 
 > The database file is ignored by git (`.gitignore`). Never commit it: it
 > contains user emails and password hashes.
+
+---
+
+## ⚙️ Password reset email settings
+
+The forgot-password page emails the reset link; it never shows it on the page. Set these environment variables on the web server:
+
+| Variable | Required | Meaning |
+|---|---|---|
+| `APP_BASE_URL` | yes | Public URL of the app with no trailing slash, e.g. `https://example.com/auth`. Without it no reset email is sent and an error is logged. |
+| `MAIL_TRANSPORT` | no | `mail` (default) sends with PHP `mail()`. `log` writes the email to the PHP error log, for local development only. |
+| `MAIL_FROM` | no | Sender address. Default `no-reply@localhost`. |
+
+To use SMTP or an email API instead, edit `send_app_mail()` in `core/mailer.php`.
+
+Reset tokens are stored as SHA-256 hashes, expire after 1 hour (UTC), and work once.
