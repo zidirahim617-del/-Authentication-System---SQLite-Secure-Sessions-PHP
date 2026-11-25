@@ -1,26 +1,16 @@
 <?php
-session_start();
 require __DIR__ . '/../core/config.php';
-
-// CSRF token generation
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
 
 $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name     = trim($_POST['name']);
-    $email    = trim($_POST['email']);
-    $password = $_POST['password'];
-    $confirm  = $_POST['confirm_password'];
-    $csrf     = $_POST['csrf_token'] ?? '';
+    csrf_verify();
 
-    // CSRF check
-    if (!hash_equals($_SESSION['csrf_token'], $csrf)) {
-        die('Invalid CSRF token');
-    }
+    $name     = trim((string) ($_POST['name'] ?? ''));
+    $email    = trim((string) ($_POST['email'] ?? ''));
+    $password = (string) ($_POST['password'] ?? '');
+    $confirm  = (string) ($_POST['confirm_password'] ?? '');
 
     // Validate inputs
     if (strlen($name) < 2) {
@@ -68,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php endif; ?>
 
 <form method="POST">
-  <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+  <?php echo csrf_field(); ?>
 
   <p>
     <label>Full Name:<br>

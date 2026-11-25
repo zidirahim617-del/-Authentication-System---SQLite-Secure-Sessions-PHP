@@ -3,22 +3,29 @@ require __DIR__ . '/../core/config.php';
 
 $error = '';
 
-// Start session (if not already started)
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email']);
-    $password = $_POST['password'];
+    csrf_verify();
 
-    $stmt = $db->prepare("SELECT * FROM users WHERE email = ?");
-    $stmt->execute([$email]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $email = trim((string) ($_POST['email'] ?? ''));
+    $password = (string) ($_POST['password'] ?? '');
 
-    if ($user && password_verify($password, $user['password'])) {
+    if (login_is_rate_limited($db, $email)) {
+        http_response_code(429);
+        $error = "Too many failed login attempts. Please wait 15 minutes and try again.";
+    } else {
+        $stmt = $db->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    if (!$error && $user && password_verify($password, $user['password'])) {
+        clear_failed_logins($db, $email);
+
         // 🔐 Regenerate session ID to prevent fixation
         session_regenerate_id(true);
+
+        // New session, new CSRF token
+        unset($_SESSION['csrf_token']);
 
         // Store user data in session
         $_SESSION['user'] = [
@@ -32,7 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         header("Location: dashboard.php");
         exit();
-    } else {
+    } elseif (!$error) {
+        record_failed_login($db, $email);
         $error = "Invalid email or password.";
     }
 }
@@ -57,10 +65,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php endif; ?>
 
 <?php if (!empty($error)): ?>
-  <p style="color: red;"><?php echo $error; ?></p>
+  <p style="color: red;"><?php echo htmlspecialchars($error); ?></p>
 <?php endif; ?>
 
 <form method="POST">
+  <?php echo csrf_field(); ?>
   <p>
     <label>Email:<br>
       <input type="email" name="email" required>
