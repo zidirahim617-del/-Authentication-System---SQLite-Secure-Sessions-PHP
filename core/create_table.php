@@ -12,7 +12,8 @@ try {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     ");
-    echo "Users table created successfully!";
+    ensure_login_attempts_table($db);
+    echo "Users and login_attempts tables created successfully!";
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
 }

@@ -1,15 +1,12 @@
 <?php
-// Define session lifetime (48 hours = 172800 seconds)
-define('SESSION_LIFETIME', 48 * 60 * 60); // 48 hours in seconds
+// Auth guard for pages inside view/. SESSION_LIFETIME (48 hours) lives in security.php.
+require_once __DIR__ . '/security.php';
 
-// Start session if not already started
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+secure_session_start();
 
-// Check if user is logged in
+// Check if user is logged in (guarded pages live in view/, next to login.php)
 if (empty($_SESSION['user'])) {
-    header('Location: /login.php');
+    header('Location: login.php');
     exit;
 }
 
@@ -18,7 +15,7 @@ if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) >
     // Expired: clear session and redirect to login
     session_unset();
     session_destroy();
-    header('Location: /login.php?expired=1');
+    header('Location: login.php?expired=1');
     exit;
 }
 

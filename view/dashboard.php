@@ -15,7 +15,10 @@ require_once '../core/session.php'; // Adjust path based on your structure
 <p><strong>Name:</strong> <?php echo htmlspecialchars($user['name']); ?></p>
 <p><strong>Email:</strong> <?php echo htmlspecialchars($user['email']); ?></p>
 
-<p><a href="logout.php">Logout</a></p>
+<form method="POST" action="logout.php">
+  <?php echo csrf_field(); ?>
+  <button type="submit">Logout</button>
+</form>
 
 </body>
 </html>

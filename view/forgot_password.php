@@ -4,6 +4,8 @@ require_once '../core/config.php';
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify();
+
     $email = $_POST['email'] ?? '';
     $token = bin2hex(random_bytes(16));
     $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
@@ -38,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p><?php echo $message; ?></p>
     <?php endif; ?>
     <form method="POST">
+        <?php echo csrf_field(); ?>
         <label>Email Address:</label><br>
         <input type="email" name="email" required><br><br>
         <button type="submit">Send Reset Link</button>
