@@ -1,0 +1,7 @@
+# SQLite databases hold real user data: never commit them
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
