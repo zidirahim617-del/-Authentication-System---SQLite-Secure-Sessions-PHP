@@ -4,6 +4,7 @@ require_once '../core/config.php';
 $message = '';
 $token = $_GET['token'] ?? '';
 $show_form = true;
+$user = null;
 
 if (!$token) {
     $message = "Invalid or missing token.";
@@ -22,6 +23,8 @@ if (!$token) {
 
 // Handle password reset
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $user) {
+    csrf_verify();
+
     $new_password = $_POST['password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
 
@@ -54,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $user) {
 
     <?php if ($show_form): ?>
         <form method="POST">
+            <?php echo csrf_field(); ?>
             <label>New Password:</label><br>
             <input type="password" name="password" required><br><br>
 
